@@ -1,102 +1,70 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 
-namespace CarSalesman
+namespace RawData
 {
-    public class Program
+    class Program
     {
         static void Main(string[] args)
         {
-            int n = int.Parse(Console.ReadLine());
-            List<Engine> listOfEngine = new List<Engine>();
-            List<Car> listOfCars = new List<Car>();
-
-            for (int i = 0; i < n; i++)
-            {
-                string[] infoEngine = Console.ReadLine()
-                    .Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                string model = infoEngine[0];
-                int power = int.Parse(infoEngine[1]);
-                int displacement;
-                string efficiency;
-
-                Engine engine = null;
-
-                if (infoEngine.Length == 2)
-                {
-                    engine = new Engine(model, power);
-                    listOfEngine.Add(engine);
-                }
-                else if (infoEngine.Length == 3)
-                {
-                    bool isDisplacement = int.TryParse(infoEngine[2], out displacement);
-
-                    if(isDisplacement)
-                    {
-                        engine = new Engine(model, power, displacement);
-                    }
-                    else
-                    {
-                        engine = new Engine(model, power, infoEngine[2]);
-                    }
-                    
-                }
-                else if(infoEngine.Length == 4)
-                {
-                    displacement = int.Parse(infoEngine[2]);
-                    efficiency = infoEngine[3];
-                    engine = new Engine(model, power, displacement, efficiency);
-                }
-
-                listOfEngine.Add(engine);
-            }
-
             int num = int.Parse(Console.ReadLine());
+            List<Car> cars = new List<Car>();
 
             for (int i = 0; i < num; i++)
             {
-                string[] infoCar = Console.ReadLine()
-                    .Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                string model = infoCar[0];
-                Engine engine = listOfEngine.Where(x => x.Model == infoCar[1]).FirstOrDefault();
-                int weight;
-                string color;
+                string[] carInfo = Console.ReadLine().Split();
 
-                Car car = null;
-                if(infoCar.Length == 2)
-                {
-                    car = new Car(model, engine);
-                }
-                else if(infoCar.Length == 3)
-                {
-                    bool isWeight = int.TryParse(infoCar[2], out weight);
+                string model = carInfo[0];
+                int engineSpeed = int.Parse(carInfo[1]);
+                int enginePower = int.Parse(carInfo[2]);
+                int cargoWeight = int.Parse(carInfo[3]);
+                string cargoType = carInfo[4];
+                List<double> tirePressure = new List<double>();
+                List<int> tireAge = new List<int>();
 
-                    if(isWeight)
-                    {
-                        car = new Car(model, engine, weight);
-                    }
-                    else
-                    {
-                        color = infoCar[2];
-                        car = new Car(model, engine, color);
-                    }
-                }
-                else if(infoCar.Length == 4)
+                for (int j = 5; j < carInfo.Length; j += 2)
                 {
-                    weight = int.Parse(infoCar[2]);
-                    color = infoCar[3];
-                    car = new Car(model, engine, weight, color);
+                    double tirePre = double.Parse(carInfo[j]);
+                    int tireAg = int.Parse(carInfo[j + 1]);
+                    tirePressure.Add(tirePre);
+                    tireAge.Add(tireAg);
                 }
-                listOfCars.Add(car);
+
+
+                Engine engine = new Engine(engineSpeed, enginePower);
+                Cargo cargo = new Cargo(cargoWeight, cargoType);
+
+
+                Tire tire = new Tire(tirePressure, tireAge);
+
+                Car car = new Car(model, engine, cargo, tire);
+
+                cars.Add(car);
             }
-
-            foreach (var car in listOfCars)
-            {
-                Console.WriteLine(car);
-            }         
             
-        }
 
+            string command = Console.ReadLine();
+            
+            if(command == "fragile")
+            {
+                var listOfCars = cars.Where(x => x.Cargo.CargoType == "fragile" && x.Tire.TiresPressure.Any(y => y < 1)).ToList();
+                foreach (var car in listOfCars)
+                {
+                    Console.WriteLine(car.Model);
+                }
+            }
+            else if(command == "flamable")
+            {
+                var listOfCars = cars.Where(x => x.Cargo.CargoType == "flamable" && x.Engine.EnginePower > 250).ToList();
+                foreach (var car in listOfCars)
+                {
+                    Console.WriteLine(car.Model);
+                }
+            }
+        }
     }
 }
