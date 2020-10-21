@@ -1,33 +1,77 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 
-namespace AssociativeArraysLab
+namespace PokemonTrainer
 {
     class Program
     {
         static void Main(string[] args)
         {
-            double[] nums = Console.ReadLine().Split().Select(double.Parse).ToArray();
+            //Pesho Charizard Fire 100
+            Dictionary<string, Trainer> collectionOfTrainers = new Dictionary<string, Trainer>();
 
-            SortedDictionary<double, int> count = new SortedDictionary<double, int>();
+            string input = Console.ReadLine();
 
-            foreach (var num in nums)
+            while (input != "Tournament")
             {
-                if(count.ContainsKey(num))
+                string[] info = input
+                    .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                string trainerName = info[0];
+                string pokemonName = info[1];
+                string pokemonElement = info[2];
+                int pokemonHealth = int.Parse(info[3]);
+
+                Pokemon pokemon = new Pokemon(pokemonName, pokemonElement, pokemonHealth);
+                Trainer trainer = new Trainer(trainerName);
+
+                if(!collectionOfTrainers.ContainsKey(trainerName))
                 {
-                    count[num]++;
+                    collectionOfTrainers.Add(trainerName, new Trainer(pokemonName));
                 }
-                else
-                {
-                    count.Add(num, 1);
-                }
+
+                collectionOfTrainers[trainerName].CollectionOfPokemons.Add(pokemon);
+
+                input = Console.ReadLine();
             }
-            foreach (var number in count)
+
+
+            string command = Console.ReadLine();
+
+            while (command != "End")
             {
-                Console.WriteLine($"{number.Key} -> {number.Value}");
+
+                foreach (var currTrainer in collectionOfTrainers)
+                {
+                    if(currTrainer.Value.CollectionOfPokemons
+                        .Any(x => x.Element == command))
+                    {
+                        currTrainer.Value.NumberOfBadges++;
+                    }
+                    else
+                    {
+
+                        foreach (var pokemon in currTrainer.Value.CollectionOfPokemons)
+                        {
+                            pokemon.Health -= 10;
+                        }
+
+                       currTrainer.Value.CollectionOfPokemons
+                            .RemoveAll(x => x.Health <= 0);
+                    }
+                    
+                }
+
+
+                command = Console.ReadLine();
+            }
+
+            foreach (var trainer in collectionOfTrainers.OrderByDescending(x => x.Value.NumberOfBadges))
+            {
+                Console.WriteLine($"{trainer.Key} {trainer.Value.NumberOfBadges} { trainer.Value.CollectionOfPokemons.Count}");
             }
         }
-
     }
 }
