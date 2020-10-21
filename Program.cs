@@ -1,77 +1,102 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 
-namespace PokemonTrainer
+namespace CarSalesman
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
-            //Pesho Charizard Fire 100
-            Dictionary<string, Trainer> collectionOfTrainers = new Dictionary<string, Trainer>();
+            int n = int.Parse(Console.ReadLine());
+            List<Engine> listOfEngine = new List<Engine>();
+            List<Car> listOfCars = new List<Car>();
 
-            string input = Console.ReadLine();
-
-            while (input != "Tournament")
+            for (int i = 0; i < n; i++)
             {
-                string[] info = input
+                string[] infoEngine = Console.ReadLine()
                     .Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                string trainerName = info[0];
-                string pokemonName = info[1];
-                string pokemonElement = info[2];
-                int pokemonHealth = int.Parse(info[3]);
+                string model = infoEngine[0];
+                int power = int.Parse(infoEngine[1]);
+                int displacement;
+                string efficiency;
 
-                Pokemon pokemon = new Pokemon(pokemonName, pokemonElement, pokemonHealth);
-                Trainer trainer = new Trainer(trainerName);
+                Engine engine = null;
 
-                if(!collectionOfTrainers.ContainsKey(trainerName))
+                if (infoEngine.Length == 2)
                 {
-                    collectionOfTrainers.Add(trainerName, new Trainer(pokemonName));
+                    engine = new Engine(model, power);
+                    listOfEngine.Add(engine);
                 }
-
-                collectionOfTrainers[trainerName].CollectionOfPokemons.Add(pokemon);
-
-                input = Console.ReadLine();
-            }
-
-
-            string command = Console.ReadLine();
-
-            while (command != "End")
-            {
-
-                foreach (var currTrainer in collectionOfTrainers)
+                else if (infoEngine.Length == 3)
                 {
-                    if(currTrainer.Value.CollectionOfPokemons
-                        .Any(x => x.Element == command))
+                    bool isDisplacement = int.TryParse(infoEngine[2], out displacement);
+
+                    if(isDisplacement)
                     {
-                        currTrainer.Value.NumberOfBadges++;
+                        engine = new Engine(model, power, displacement);
                     }
                     else
                     {
-
-                        foreach (var pokemon in currTrainer.Value.CollectionOfPokemons)
-                        {
-                            pokemon.Health -= 10;
-                        }
-
-                       currTrainer.Value.CollectionOfPokemons
-                            .RemoveAll(x => x.Health <= 0);
+                        engine = new Engine(model, power, infoEngine[2]);
                     }
                     
                 }
+                else if(infoEngine.Length == 4)
+                {
+                    displacement = int.Parse(infoEngine[2]);
+                    efficiency = infoEngine[3];
+                    engine = new Engine(model, power, displacement, efficiency);
+                }
 
-
-                command = Console.ReadLine();
+                listOfEngine.Add(engine);
             }
 
-            foreach (var trainer in collectionOfTrainers.OrderByDescending(x => x.Value.NumberOfBadges))
+            int num = int.Parse(Console.ReadLine());
+
+            for (int i = 0; i < num; i++)
             {
-                Console.WriteLine($"{trainer.Key} {trainer.Value.NumberOfBadges} { trainer.Value.CollectionOfPokemons.Count}");
+                string[] infoCar = Console.ReadLine()
+                    .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                string model = infoCar[0];
+                Engine engine = listOfEngine.Where(x => x.Model == infoCar[1]).FirstOrDefault();
+                int weight;
+                string color;
+
+                Car car = null;
+                if(infoCar.Length == 2)
+                {
+                    car = new Car(model, engine);
+                }
+                else if(infoCar.Length == 3)
+                {
+                    bool isWeight = int.TryParse(infoCar[2], out weight);
+
+                    if(isWeight)
+                    {
+                        car = new Car(model, engine, weight);
+                    }
+                    else
+                    {
+                        color = infoCar[2];
+                        car = new Car(model, engine, color);
+                    }
+                }
+                else if(infoCar.Length == 4)
+                {
+                    weight = int.Parse(infoCar[2]);
+                    color = infoCar[3];
+                    car = new Car(model, engine, weight, color);
+                }
+                listOfCars.Add(car);
             }
+
+            foreach (var car in listOfCars)
+            {
+                Console.WriteLine(car);
+            }         
+            
         }
+
     }
 }
